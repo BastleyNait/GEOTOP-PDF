@@ -1,0 +1,1098 @@
+{% extends "base.html" %}
+
+{% block title %}Subir Archivo - GEOTOP{% endblock %}
+
+{% block extra_styles %}
+         .section-title {
+             display: flex;
+             align-items: center;
+             justify-content: space-between;
+             margin-bottom: 2rem;
+         }
+         
+         .section-title-left {
+             display: flex;
+             align-items: center;
+             gap: 1rem;
+         }
+         
+         .section-title i {
+             color: #FFD760;
+             font-size: 1.5rem;
+         }
+         
+         .section-title h2 {
+             font-size: 1.5rem;
+             font-weight: 700;
+             color: #1a202c;
+         }
+         
+         .upload-section {
+             background: white;
+             border-radius: 16px;
+             padding: 0;
+             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+             border: 1px solid #e2e8f0;
+             overflow: hidden;
+         }
+         
+         .section-header {
+             padding: 1.5rem 2rem 0.75rem 2rem;
+             border-bottom: 1px solid #e2e8f0;
+         }
+         
+         .upload-area {
+             margin: 1.5rem;
+             border: 2px dashed #cbd5e0;
+             border-radius: 12px;
+             padding: 1.5rem 1.5rem;
+             text-align: center;
+             transition: all 0.3s ease;
+             cursor: pointer;
+             background: #fafafa;
+         }
+         
+         .upload-area:hover {
+             border-color: #FFD760;
+             background: #edf2f7;
+         }
+         
+         .upload-area.dragover {
+             border-color: #FFD760;
+             background: linear-gradient(135deg, rgba(255, 215, 96, 0.1) 0%, rgba(255, 204, 0, 0.1) 100%);
+         }
+         
+         .upload-content {
+             display: flex;
+             flex-direction: column;
+             align-items: center;
+             gap: 1rem;
+         }
+         
+         .upload-icon {
+             width: 60px;
+             height: 60px;
+             background: linear-gradient(135deg, #FFD760 0%, #FFCC00 100%);
+             border-radius: 15px;
+             display: flex;
+             align-items: center;
+             justify-content: center;
+             color: #2E2E2E;
+             font-size: 1.5rem;
+         }
+         
+         .upload-content h3 {
+             font-size: 1.25rem;
+             font-weight: 600;
+             color: #1a202c;
+             margin-bottom: 0.25rem;
+         }
+         
+         .upload-content p {
+             color: #718096;
+             font-size: 0.9rem;
+             margin-bottom: 0.75rem;
+         }
+         
+         .select-files-btn {
+             background: linear-gradient(135deg, #FFD760 0%, #FFCC00 100%);
+             color: #2E2E2E;
+             border: none;
+             padding: 0.75rem 1.5rem;
+             border-radius: 8px;
+             font-weight: 500;
+             cursor: pointer;
+             transition: all 0.2s;
+             display: flex;
+             align-items: center;
+             gap: 0.5rem;
+         }
+         
+         .select-files-btn:hover {
+             transform: translateY(-1px);
+             box-shadow: 0 4px 12px rgba(255, 215, 96, 0.4);
+         }
+         
+         .file-preview-modern {
+             margin: 1.5rem;
+             padding: 1rem;
+             background: #f8fafc;
+             border-radius: 12px;
+         }
+         
+         .file-preview-modern.error {
+             background: #fef2f2;
+             border: 1px solid #fecaca;
+         }
+             border: 1px solid #e2e8f0;
+             display: none;
+         }
+         
+         .file-preview-modern.show {
+             display: block;
+         }
+         
+         .file-info-modern {
+             display: flex;
+             align-items: center;
+             gap: 1rem;
+             margin-bottom: 1rem;
+         }
+         
+         .file-icon-modern {
+             width: 48px;
+             height: 48px;
+             background: #e53e3e;
+             border-radius: 8px;
+             display: flex;
+             align-items: center;
+             justify-content: center;
+             color: white;
+             font-size: 1.5rem;
+         }
+         
+         .file-details-modern h4 {
+             font-weight: 600;
+             color: #1a202c;
+             margin-bottom: 0.25rem;
+         }
+         
+         .file-details-modern p {
+             color: #718096;
+             font-size: 0.875rem;
+         }
+         
+         .progress-container {
+             margin-bottom: 1.5rem;
+             display: none;
+         }
+         
+         .progress-container.show {
+             display: block;
+         }
+         
+         .progress-bar {
+             width: 100%;
+             height: 8px;
+             background: #e2e8f0;
+             border-radius: 4px;
+             overflow: hidden;
+             margin-bottom: 0.5rem;
+         }
+         
+         .progress-fill {
+             height: 100%;
+             background: linear-gradient(135deg, #FFD760 0%, #FFCC00 100%);
+             width: 0%;
+             transition: width 0.3s ease;
+         }
+         
+         .progress-info {
+             display: flex;
+             justify-content: space-between;
+             align-items: center;
+             font-size: 0.875rem;
+             color: #4a5568;
+         }
+         
+         .upload-actions {
+             margin: 2rem;
+             padding-top: 1.5rem;
+             border-top: 1px solid #e2e8f0;
+         }
+         
+         .upload-btn-modern {
+             width: 100%;
+             background: linear-gradient(135deg, #FFD760 0%, #FFCC00 100%);
+             color: #2E2E2E;
+             border: none;
+             padding: 1rem 2rem;
+             border-radius: 12px;
+             font-size: 1rem;
+             font-weight: 600;
+             cursor: pointer;
+             transition: all 0.2s;
+             display: flex;
+             align-items: center;
+             justify-content: center;
+             gap: 0.5rem;
+         }
+         
+         .upload-btn-modern:hover:not(:disabled) {
+             transform: translateY(-1px);
+             box-shadow: 0 8px 25px rgba(255, 215, 96, 0.4);
+         }
+         
+         .upload-btn-modern:disabled {
+             opacity: 0.6;
+             cursor: not-allowed;
+             transform: none;
+         }
+         
+         .loading-overlay {
+             position: fixed;
+             top: 0;
+             left: 0;
+             width: 100%;
+             height: 100%;
+             background: rgba(0, 0, 0, 0.5);
+             display: none;
+             justify-content: center;
+             align-items: center;
+             z-index: 1000;
+         }
+         
+         .loading-content {
+             background: white;
+             padding: 2rem;
+             border-radius: 12px;
+             text-align: center;
+             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+         }
+         
+         .spinner {
+             width: 40px;
+             height: 40px;
+             border: 4px solid #e2e8f0;
+             border-top: 4px solid #FFD760;
+             border-radius: 50%;
+             animation: spin 1s linear infinite;
+             margin: 0 auto 1rem;
+         }
+         
+         @keyframes spin {
+             0% { transform: rotate(0deg); }
+             100% { transform: rotate(360deg); }
+         }
+         
+         .alert {
+             padding: 1rem 1.5rem;
+             border-radius: 8px;
+             margin-bottom: 1rem;
+             display: flex;
+             align-items: center;
+             gap: 0.5rem;
+         }
+         
+         .alert-success {
+             background: #d1fae5;
+             color: #065f46;
+             border: 1px solid #a7f3d0;
+         }
+         
+         .alert-error {
+             background: #fee2e2;
+             color: #991b1b;
+             border: 1px solid #fca5a5;
+         }
+         
+         .files-list {
+             margin-top: 1rem;
+             padding: 1rem;
+             background: #f8fafc;
+             border-radius: 12px;
+             border: 1px solid #e2e8f0;
+         }
+         
+         .file-item {
+             display: flex;
+             align-items: center;
+             padding: 0.75rem;
+             margin-bottom: 0.5rem;
+             background: white;
+             border-radius: 8px;
+             border: 1px solid #e2e8f0;
+             transition: all 0.2s ease;
+         }
+         
+         .file-item:last-child {
+             margin-bottom: 0;
+         }
+         
+         .file-item.first-file {
+             border-color: #FFD760;
+             background: linear-gradient(135deg, rgba(255, 215, 96, 0.1) 0%, rgba(255, 204, 0, 0.1) 100%);
+         }
+         
+         .file-item-icon {
+             width: 32px;
+             height: 32px;
+             background: #e53e3e;
+             border-radius: 6px;
+             display: flex;
+             align-items: center;
+             justify-content: center;
+             color: white;
+             font-size: 0.875rem;
+             margin-right: 0.75rem;
+         }
+         
+         .file-item.first-file .file-item-icon {
+             background: linear-gradient(135deg, #FFD760 0%, #FFCC00 100%);
+             color: #2E2E2E;
+         }
+         
+         .file-item-details {
+             flex: 1;
+         }
+         
+         .file-item-name {
+             font-weight: 600;
+             color: #1a202c;
+             margin-bottom: 0.25rem;
+             font-size: 0.875rem;
+         }
+         
+         .file-item-size {
+             color: #718096;
+             font-size: 0.75rem;
+         }
+         
+         .file-item-badge {
+              background: linear-gradient(135deg, #FFD760 0%, #FFCC00 100%);
+              color: #2E2E2E;
+              padding: 0.25rem 0.5rem;
+              border-radius: 4px;
+              font-size: 0.75rem;
+              font-weight: 600;
+              display: flex;
+              align-items: center;
+              gap: 0.25rem;
+          }
+          
+          .file-item-remove {
+              background: #fee2e2;
+              color: #dc2626;
+              border: none;
+              width: 24px;
+              height: 24px;
+              border-radius: 4px;
+              cursor: pointer;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-size: 0.75rem;
+              transition: all 0.2s ease;
+              margin-left: 0.5rem;
+          }
+          
+          .file-item-remove:hover {
+              background: #fecaca;
+              transform: scale(1.1);
+          }
+
+          .file-item-qr-btn {
+              background: #28a745;
+              color: white;
+              border: none;
+              border-radius: 4px;
+              padding: 4px 8px;
+              font-size: 11px;
+              cursor: pointer;
+              margin-left: 8px;
+              transition: all 0.2s ease;
+              font-weight: 500;
+              margin-right: 4px;
+          }
+
+          .file-item-qr-btn:hover {
+              background: #218838;
+              transform: scale(1.05);
+          }
+
+          .file-item-qr-btn.active {
+              background: linear-gradient(135deg, #FFD760 0%, #FFCC00 100%);
+              color: #2E2E2E;
+          }
+
+          .file-item-qr-btn.active:hover {
+            background: linear-gradient(135deg, #FFCC00 0%, #FFB700 100%);
+        }
+
+        .file-item-actions {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+{% endblock %}
+
+{% block content %}
+            <!-- Sección de Subida -->
+            <div class="upload-section">
+                <div class="section-header">
+                    <div class="section-title">
+                        <div class="section-title-left">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <h2>Subir Documentos PDF</h2>
+                        </div>
+                    </div>
+                    <p style="color: #718096; font-size: 1rem;">Arrastra y suelta tus archivos PDF o haz clic para seleccionar múltiples archivos</p>
+                </div>
+                
+                <form id="uploadForm" action="{{ url_for('upload_file') }}" method="post" enctype="multipart/form-data">
+                    <input type="hidden" id="qrFileIndexInput" name="qr_file_index" value="0">
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-content">
+                            <div class="upload-icon">
+                                <i class="fas fa-file-pdf"></i>
+                            </div>
+                            <h3>Selecciona tus archivos PDF</h3>
+                            <p>Arrastra y suelta aquí o haz clic para seleccionar múltiples archivos</p>
+                            <button type="button" class="select-files-btn" id="selectBtn">
+                                <i class="fas fa-folder-open"></i>
+                                Seleccionar Archivos
+                            </button>
+                        </div>
+                        <input type="file" id="fileInput" name="files" accept=".pdf" multiple style="display: none;" required>
+                    </div>
+                    
+                    <!-- Selector de Carpeta -->
+                    <div class="folder-selector" style="margin: 1.5rem; padding: 1rem; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <label for="target_folder" style="font-weight: 600; color: #1a202c; margin: 0;">
+                                <i class="fas fa-folder" style="color: #FFD760; margin-right: 0.5rem;"></i>
+                                Carpeta de destino:
+                            </label>
+                            <button type="button" onclick="openCreateFolderModal()" style="background: linear-gradient(135deg, #FFD760 0%, #FFCC00 100%); color: #1a202c; border: none; padding: 0.5rem 1rem; border-radius: 6px; font-size: 0.875rem; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fas fa-plus"></i>
+                                Nueva Carpeta
+                            </button>
+                        </div>
+                        <select name="target_folder" id="target_folder" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 8px; background: white; font-size: 1rem;">
+                            <option value="certificados">📁 Certificados (por defecto)</option>
+                            <option value="academicos">🎓 Certificados Académicos</option>
+                            <option value="laborales">💼 Certificados Laborales</option>
+                            <option value="tecnicos">🔧 Certificados Técnicos</option>
+                            <option value="medicos">🏥 Certificados Médicos</option>
+                            <option value="legales">📄 Documentos Legales</option>
+                            <option value="otros">📂 Otros</option>
+                        </select>
+                        <p style="font-size: 0.875rem; color: #718096; margin-top: 0.5rem; margin-bottom: 0;">
+                            Selecciona la carpeta donde quieres guardar tu archivo
+                        </p>
+                    </div>
+                    
+                    <div class="file-preview-modern" id="filePreview">
+                        <div class="file-info-modern">
+                            <div class="file-icon-modern">
+                                <i class="fas fa-file-pdf"></i>
+                            </div>
+                            <div class="file-details-modern">
+                                <h4 id="fileName">Nombre del archivo</h4>
+                                <p id="fileSize">Tamaño del archivo</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Lista de archivos seleccionados -->
+                        <div class="files-list" id="filesList" style="display: none;">
+                            <h5 style="margin: 0 0 0.75rem 0; color: #1a202c; font-weight: 600;">
+                                <i class="fas fa-list" style="color: #FFD760; margin-right: 0.5rem;"></i>
+                                Archivos a combinar:
+                            </h5>
+                            <div id="filesListContainer"></div>
+                            <div style="margin-top: 0.75rem; padding: 0.75rem; background: #e6fffa; border-radius: 8px; border: 1px solid #81e6d9;">
+                                <i class="fas fa-qrcode" style="color: #2d3748; margin-right: 0.5rem;"></i>
+                                <span style="color: #2d3748; font-size: 0.875rem; font-weight: 500;">El código QR se agregará al primer archivo de la lista</span>
+                            </div>
+                        </div>
+                        
+                        <div class="progress-container" id="progressContainer">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progressFill"></div>
+                            </div>
+                            <div class="progress-info">
+                                <span id="progressText">Preparando subida...</span>
+                                <span id="progressPercent">0%</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="upload-actions">
+                        <button type="submit" class="upload-btn-modern" id="uploadBtn" disabled>
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <span id="uploadBtnText">Selecciona archivos</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Loading Overlay -->
+            <div class="loading-overlay" id="loadingOverlay">
+                <div class="loading-content">
+                    <div class="spinner"></div>
+                    <h3>Procesando archivo...</h3>
+                    <p>Subiendo y generando código QR</p>
+                </div>
+            </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const filePreview = document.getElementById('filePreview');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const uploadBtnText = document.getElementById('uploadBtnText');
+        const selectBtn = document.getElementById('selectBtn');
+        const uploadForm = document.getElementById('uploadForm');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        const progressPercent = document.getElementById('progressPercent');
+        
+        // Array para almacenar los archivos seleccionados
+        let selectedFiles = [];
+        let qrFileIndex = 0; // Índice del archivo que llevará el QR
+        
+        // Prevenir comportamiento por defecto del drag and drop
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, preventDefaults, false);
+            document.body.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        // Highlight del área de subida
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, highlight, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, unhighlight, false);
+        });
+        
+        function highlight(e) {
+            uploadArea.classList.add('dragover');
+        }
+        
+        function unhighlight(e) {
+            uploadArea.classList.remove('dragover');
+        }
+        
+        // Manejar drop
+        uploadArea.addEventListener('drop', handleDrop, false);
+        
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            if (files.length > 0) {
+                addFilesToSelection(files);
+            }
+        }
+        
+        // Click en el área de subida
+        uploadArea.addEventListener('click', function(e) {
+            if (e.target.tagName !== 'BUTTON') {
+                fileInput.click();
+            }
+        });
+        
+        // Click en el botón de seleccionar
+        selectBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            fileInput.click();
+        });
+        
+        // Cambio en el input de archivo
+        fileInput.addEventListener('change', function(e) {
+            if (e.target.files.length > 0) {
+                addFilesToSelection(e.target.files);
+            }
+        });
+        
+        function updateFilePreview(files) {
+            const fileName = document.getElementById('fileName');
+            const fileSize = document.getElementById('fileSize');
+            const maxSize = 16 * 1024 * 1024; // 16MB en bytes
+            const maxTotalSize = 64 * 1024 * 1024; // 64MB total máximo
+            
+            let totalSize = 0;
+            let hasOversizedFile = false;
+            let oversizedFiles = [];
+            
+            // Calcular tamaño total y verificar archivos individuales
+            for (let i = 0; i < selectedFiles.length; i++) {
+                const file = selectedFiles[i];
+                totalSize += file.size;
+                if (file.size > maxSize) {
+                    hasOversizedFile = true;
+                    oversizedFiles.push(file.name);
+                }
+            }
+            
+            // Mostrar información de archivos
+            if (selectedFiles.length === 1) {
+                fileName.textContent = selectedFiles[0].name;
+                fileSize.textContent = formatFileSize(selectedFiles[0].size);
+                document.getElementById('filesList').style.display = 'none';
+            } else {
+                fileName.textContent = `${selectedFiles.length} archivos seleccionados`;
+                fileSize.textContent = `Tamaño total: ${formatFileSize(totalSize)}`;
+                generateFilesList(selectedFiles);
+                document.getElementById('filesList').style.display = 'block';
+            }
+            
+            // Validar tamaños
+            if (hasOversizedFile) {
+                showFileSizeError(oversizedFiles, maxSize, 'individual');
+                uploadBtn.disabled = true;
+                uploadBtnText.textContent = 'Archivos muy grandes';
+                filePreview.classList.add('show', 'error');
+            } else if (totalSize > maxTotalSize) {
+                showFileSizeError(totalSize, maxTotalSize, 'total');
+                uploadBtn.disabled = true;
+                uploadBtnText.textContent = 'Tamaño total muy grande';
+                filePreview.classList.add('show', 'error');
+            } else {
+                // Archivos válidos
+                hideFileSizeError();
+                uploadBtn.disabled = false;
+                if (selectedFiles.length === 1) {
+                    uploadBtnText.textContent = 'Subir Archivo';
+                } else {
+                    uploadBtnText.textContent = `Combinar y Subir ${selectedFiles.length} Archivos`;
+                }
+                filePreview.classList.add('show');
+                filePreview.classList.remove('error');
+            }
+        }
+        
+        function showFileSizeError(data, maxSize, type) {
+            // Crear o mostrar mensaje de error
+            let errorMsg = document.getElementById('fileSizeError');
+            if (!errorMsg) {
+                errorMsg = document.createElement('div');
+                errorMsg.id = 'fileSizeError';
+                errorMsg.style.cssText = `
+                    background: #fee2e2;
+                    border: 1px solid #fecaca;
+                    color: #dc2626;
+                    padding: 1rem;
+                    border-radius: 8px;
+                    margin-top: 1rem;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    font-size: 0.9rem;
+                `;
+                filePreview.appendChild(errorMsg);
+            }
+            
+            let errorContent = '';
+            if (type === 'individual') {
+                errorContent = `
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <div>
+                        <strong>Archivos demasiado grandes</strong><br>
+                        Los siguientes archivos exceden el límite de ${formatFileSize(maxSize)}:<br>
+                        ${data.map(name => `• ${name}`).join('<br>')}
+                    </div>
+                `;
+            } else if (type === 'total') {
+                errorContent = `
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <div>
+                        <strong>Tamaño total demasiado grande</strong><br>
+                        Tamaño total actual: ${formatFileSize(data)}<br>
+                        Tamaño máximo total: ${formatFileSize(maxSize)}
+                    </div>
+                `;
+            }
+            
+            errorMsg.innerHTML = errorContent;
+            errorMsg.style.display = 'flex';
+        }
+        
+        function hideFileSizeError() {
+            const errorMsg = document.getElementById('fileSizeError');
+            if (errorMsg) {
+                errorMsg.style.display = 'none';
+            }
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        function addFilesToSelection(newFiles) {
+            // Agregar nuevos archivos al array existente
+            for (let i = 0; i < newFiles.length; i++) {
+                const file = newFiles[i];
+                // Verificar que sea PDF
+                if (file.type.includes('pdf')) {
+                    // Verificar que no esté ya en la lista
+                    const exists = selectedFiles.some(f => f.name === file.name && f.size === file.size);
+                    if (!exists) {
+                        selectedFiles.push(file);
+                    }
+                }
+            }
+            
+            // Actualizar el input de archivo con todos los archivos seleccionados
+            updateFileInput();
+            
+            // Actualizar la vista
+            updateFilePreview(selectedFiles);
+        }
+        
+        function removeFileFromSelection(index) {
+            // Si eliminamos el archivo que tiene el QR, mover el QR al primer archivo
+            if (index === qrFileIndex) {
+                qrFileIndex = 0;
+            } else if (index < qrFileIndex) {
+                // Si eliminamos un archivo antes del que tiene QR, ajustar el índice
+                qrFileIndex--;
+            }
+            
+            selectedFiles.splice(index, 1);
+            
+            // Si no quedan archivos, resetear el índice QR
+            if (selectedFiles.length === 0) {
+                qrFileIndex = 0;
+            }
+            
+            updateFileInput();
+            
+            if (selectedFiles.length === 0) {
+                // Resetear la vista si no hay archivos
+                filePreview.classList.remove('show');
+                uploadBtn.disabled = true;
+                uploadBtnText.textContent = 'Selecciona archivos';
+            } else {
+                updateFilePreview(selectedFiles);
+            }
+        }
+
+        function setQrFile(index) {
+            qrFileIndex = index;
+            document.getElementById('qrFileIndexInput').value = index;
+            generateFilesList(selectedFiles);
+        }
+        
+        function updateFileInput() {
+            // Crear un nuevo DataTransfer para actualizar el input
+            const dt = new DataTransfer();
+            selectedFiles.forEach(file => dt.items.add(file));
+            fileInput.files = dt.files;
+        }
+        
+        function generateFilesList(files) {
+            const container = document.getElementById('filesListContainer');
+            container.innerHTML = '';
+            
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const hasQr = i === qrFileIndex;
+                
+                const fileItem = document.createElement('div');
+                fileItem.className = `file-item ${hasQr ? 'first-file' : ''}`;
+                
+                fileItem.innerHTML = `
+                    <div class="file-item-icon">
+                        <i class="fas fa-file-pdf"></i>
+                    </div>
+                    <div class="file-item-details">
+                        <div class="file-item-name">${file.name}</div>
+                        <div class="file-item-size">${formatFileSize(file.size)}</div>
+                    </div>
+                    ${hasQr ? `
+                        <div class="file-item-badge">
+                            <i class="fas fa-qrcode"></i>
+                            Con QR
+                        </div>
+                    ` : ''}
+                    <button type="button" class="file-item-qr-btn ${hasQr ? 'active' : ''}" onclick="event.preventDefault(); event.stopPropagation(); setQrFile(${i})" title="${hasQr ? 'QR seleccionado' : 'Seleccionar para QR'}">
+                        ${hasQr ? '<i class="fas fa-check"></i> QR' : '<i class="fas fa-qrcode"></i> QR'}
+                    </button>
+                    <button type="button" class="file-item-remove" onclick="event.preventDefault(); event.stopPropagation(); removeFileFromSelection(${i})" title="Eliminar archivo">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                
+                container.appendChild(fileItem);
+            }
+        }
+        
+        // Envío del formulario
+        uploadForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (!fileInput.files.length) {
+                alert('Por favor selecciona al menos un archivo');
+                return;
+            }
+            
+            const files = fileInput.files;
+            const maxSize = 16 * 1024 * 1024; // 16MB por archivo
+            const maxTotalSize = 64 * 1024 * 1024; // 64MB total
+            let totalSize = 0;
+            
+            // Validar tamaños antes de enviar
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                totalSize += file.size;
+                if (file.size > maxSize) {
+                    alert(`El archivo "${file.name}" es demasiado grande. Tamaño máximo por archivo: ${formatFileSize(maxSize)}`);
+                    return;
+                }
+            }
+            
+            if (totalSize > maxTotalSize) {
+                alert(`El tamaño total de los archivos es demasiado grande. Tamaño máximo total: ${formatFileSize(maxTotalSize)}`);
+                return;
+            }
+            
+            // Validar tipo de archivo (solo PDF) para todos los archivos
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                if (!file.type.includes('pdf')) {
+                    alert(`El archivo "${file.name}" no es un PDF válido`);
+                    return;
+                }
+            }
+            
+            // Mostrar overlay de carga
+            loadingOverlay.style.display = 'flex';
+            
+            // Simular progreso
+            progressContainer.classList.add('show');
+            simulateProgress();
+            
+            // Enviar formulario
+            setTimeout(() => {
+                uploadForm.submit();
+            }, 1000);
+        });
+        
+        function simulateProgress() {
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress > 90) {
+                    progress = 90;
+                    clearInterval(interval);
+                }
+                
+                progressFill.style.width = progress + '%';
+                progressPercent.textContent = Math.round(progress) + '%';
+                
+                if (progress < 30) {
+                    progressText.textContent = 'Preparando archivo...';
+                } else if (progress < 60) {
+                    progressText.textContent = 'Subiendo a la nube...';
+                } else {
+                    progressText.textContent = 'Finalizando...';
+                }
+            }, 200);
+        }
+        
+        // Funciones para el modal de crear carpeta
+        function openCreateFolderModal() {
+            document.getElementById('createFolderModal').style.display = 'block';
+        }
+        
+        function closeCreateFolderModal() {
+            document.getElementById('createFolderModal').style.display = 'none';
+            document.getElementById('folder_name').value = '';
+        }
+        
+        // Función para actualizar el selector de carpetas
+         function updateFolderSelector() {
+             fetch('/api/folders')
+                 .then(response => response.json())
+                 .then(data => {
+                     if (data.folders) {
+                         const select = document.getElementById('target_folder');
+                         // Guardar la opción seleccionada actual
+                         const currentValue = select.value;
+                         
+                         // Limpiar opciones existentes
+                         select.innerHTML = '';
+                         
+                         // Agregar solo las carpetas que realmente existen
+                         const folderKeys = Object.keys(data.folders).filter(key => key !== 'root');
+                         
+                         // Si no hay carpetas, crear una opción por defecto
+                         if (folderKeys.length === 0) {
+                             const option = document.createElement('option');
+                             option.value = 'certificados';
+                             option.textContent = '📁 Certificados (por defecto)';
+                             select.appendChild(option);
+                         } else {
+                             // Agregar todas las carpetas existentes
+                             folderKeys.forEach(folderPath => {
+                                 const option = document.createElement('option');
+                                 option.value = folderPath;
+                                 
+                                 // Agregar iconos específicos según el nombre de la carpeta
+                                 let icon = '📁';
+                                 if (folderPath.includes('certificados')) icon = '📁';
+                                 else if (folderPath.includes('academicos')) icon = '🎓';
+                                 else if (folderPath.includes('laborales')) icon = '💼';
+                                 else if (folderPath.includes('tecnicos')) icon = '🔧';
+                                 else if (folderPath.includes('medicos')) icon = '🏥';
+                                 else if (folderPath.includes('legales')) icon = '📄';
+                                 
+                                 option.textContent = `${icon} ${folderPath}`;
+                                 select.appendChild(option);
+                             });
+                         }
+                         
+                         // Restaurar la selección anterior si existe
+                         if (currentValue && select.querySelector(`option[value="${currentValue}"]`)) {
+                             select.value = currentValue;
+                         }
+                     }
+                 })
+                 .catch(error => {
+                     console.error('Error al actualizar carpetas:', error);
+                 });
+         }
+        
+        // Cargar carpetas al iniciar la página
+         document.addEventListener('DOMContentLoaded', function() {
+             updateFolderSelector();
+             
+             // Manejar el envío del formulario de crear carpeta
+             const createFolderForm = document.getElementById('createFolderForm');
+             if (createFolderForm) {
+                 createFolderForm.addEventListener('submit', function(e) {
+                     e.preventDefault();
+                     
+                     const formData = new FormData(this);
+                     
+                     fetch(this.action, {
+                         method: 'POST',
+                         body: formData,
+                         headers: {
+                             'X-Requested-With': 'XMLHttpRequest'
+                         }
+                     })
+                     .then(response => response.json())
+                     .then(data => {
+                         if (data.success) {
+                             // Cerrar modal
+                             closeCreateFolderModal();
+                             // Actualizar selector de carpetas
+                             updateFolderSelector();
+                             // Mostrar mensaje de éxito
+                             alert(data.message || 'Carpeta creada exitosamente');
+                         } else {
+                             alert(data.error || 'Error al crear la carpeta');
+                         }
+                     })
+                     .catch(error => {
+                         console.error('Error:', error);
+                         alert('Error al crear la carpeta');
+                     });
+                 });
+             }
+         });
+        
+        // Cerrar modal al hacer clic fuera
+        window.addEventListener('click', function(e) {
+            const modal = document.getElementById('createFolderModal');
+            if (e.target === modal) {
+                closeCreateFolderModal();
+            }
+        });
+    </script>
+    
+    <!-- Modal para crear carpeta -->
+     <div id="createFolderModal" class="modal">
+         <div class="modal-content">
+             <h3>Crear Nueva Carpeta</h3>
+             <form id="createFolderForm" action="{{ url_for('create_folder_route') }}" method="post">
+                 <div class="form-group">
+                     <label for="folder_name">Nombre de la carpeta:</label>
+                     <input type="text" id="folder_name" name="folder_name" required>
+                 </div>
+                 <div class="modal-actions">
+                     <button type="button" class="btn-cancel" onclick="closeCreateFolderModal()">Cancelar</button>
+                     <button type="submit" class="btn-confirm">Crear Carpeta</button>
+                 </div>
+             </form>
+         </div>
+     </div>
+    
+    <style>
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 2rem;
+            border-radius: 12px;
+            width: 400px;
+            max-width: 90%;
+        }
+        
+        .modal h3 {
+            margin-bottom: 1rem;
+            color: #1a202c;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #2d3748;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 1.5rem;
+        }
+        
+        .btn-cancel {
+            background: #e2e8f0;
+            color: #4a5568;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        .btn-confirm {
+            background: #4A6FA5;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+    </style>
+{% endblock %}

@@ -1,0 +1,1404 @@
+{% extends "base.html" %}
+
+{% block title %}Explorador de Archivos - GEOTOP{% endblock %}
+
+{% block extra_styles %}
+        /* Estilos para el explorador de archivos */
+        .explorer-container {
+            display: flex;
+            gap: 1.5rem;
+            height: calc(100vh - 200px);
+        }
+        
+        .folder-tree {
+            width: 300px;
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+            overflow-y: auto;
+        }
+        
+        .folder-tree h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .folder-item {
+            padding: 0.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .folder-item:hover {
+            background: #f7fafc;
+        }
+        
+        .folder-item.active {
+            background: #e6fffa;
+            border: 1px solid #81e6d9;
+        }
+        
+        .folder-icon {
+            color: #FFD760;
+            font-size: 1rem;
+        }
+        
+        .folder-name {
+            font-weight: 500;
+            color: #2d3748;
+        }
+        
+        .file-count {
+            font-size: 0.75rem;
+            color: #718096;
+            margin-left: auto;
+        }
+        
+        .main-content {
+            flex: 1;
+            background: white;
+            border-radius: 16px;
+            padding: 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .content-header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid #e2e8f0;
+            background: #f8fafc;
+        }
+        
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: #718096;
+            margin-bottom: 1rem;
+        }
+        
+        .breadcrumb a {
+            color: #4A6FA5;
+            text-decoration: none;
+        }
+        
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+        
+        .folder-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .btn-create-folder {
+            background: linear-gradient(135deg, #FFD760 0%, #FFCC00 100%);
+            color: #1a202c;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        .btn-create-folder:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 215, 96, 0.4);
+        }
+        .btn-upload-file {
+            background: linear-gradient(135deg, #4A6FA5 0%, #2C5AA0 100%);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        .btn-upload-file:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(74, 111, 165, 0.4);
+        }
+       
+        
+        .btn-delete-folder {
+            background: #e53e3e;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        
+        .btn-delete-folder:hover {
+            background: #c53030;
+            transform: translateY(-1px);
+        }
+        
+
+        
+        .file-card.hidden {
+            display: none !important;
+        }
+        
+        .files-grid {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem 2rem;
+        }
+        
+        .file-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        
+        .file-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1rem;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        
+        .file-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            border-color: #cbd5e0;
+        }
+        
+        .file-header {
+            display: block;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+        
+        .file-icon {
+            width: 40px;
+            height: 40px;
+            background: #e53e3e;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.25rem;
+        }
+        
+        h5, .file-info h4 {
+            font-weight: 600;
+            color: #1a202c;
+            margin-bottom: 0.25rem;
+            font-size: 0.875rem;
+            line-height: 1.2;
+        }
+        
+        .file-info p {
+            color: #718096;
+            font-size: 0.75rem;
+            margin: 0;
+        }
+        
+        .file-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+        
+        .btn-file {
+            flex: 1;
+            padding: 0.5rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.25rem;
+        }
+        
+        .btn-view {
+            background: #4A6FA5;
+            color: white;
+        }
+        
+        .btn-view:hover {
+            background: #3a5a8a;
+        }
+        
+        .btn-move {
+            background: #FFD760;
+            color: #1a202c;
+        }
+        
+        .btn-move:hover {
+            background: #FFCC00;
+        }
+        
+        .btn-delete {
+            background: #e53e3e;
+            color: white;
+        }
+        
+        .btn-delete:hover {
+            background: #c53030;
+        }
+        
+        /* Estilos para botones de ordenamiento */
+        .sort-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-left: auto;
+        }
+        
+        .btn-sort {
+            padding: 0.5rem 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            background: white;
+            color: #4a5568;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-sort:hover {
+            background: #f7fafc;
+            border-color: #cbd5e0;
+        }
+        
+        .btn-sort.active {
+            background: #4A6FA5;
+            color: white;
+            border-color: #4A6FA5;
+        }
+        
+        .btn-sort.active:hover {
+            background: #3a5a8a;
+        }
+        
+        .empty-folder {
+            text-align: center;
+            padding: 3rem;
+            color: #718096;
+        }
+        
+        .empty-folder i {
+            font-size: 3rem;
+            color: #e2e8f0;
+            margin-bottom: 1rem;
+        }
+        
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 2rem;
+            border-radius: 12px;
+            width: 400px;
+            max-width: 90%;
+        }
+        
+        .modal h3 {
+            margin-bottom: 1rem;
+            color: #1a202c;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #2d3748;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 1.5rem;
+        }
+        
+        .btn-cancel {
+            background: #e2e8f0;
+            color: #4a5568;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        .btn-confirm {
+            background: #4A6FA5;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+        }
+        
+        .stat-total .stat-icon {
+            background: linear-gradient(135deg, #4A6FA5 0%, #4A6FA5 100%);
+        }
+        
+        .stat-completed .stat-icon {
+            background: linear-gradient(135deg, #FFD760 0%, #FFCC00 100%);
+        }
+        
+        .stat-processing .stat-icon {
+            background: linear-gradient(135deg, #F9E79F 0%, #F9E79F 100%);
+        }
+        
+        .stat-storage .stat-icon {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        }
+        
+        .stat-content h3 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 0.25rem;
+        }
+        
+        .stat-content p {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 0.25rem;
+        }
+        
+        .stat-subtitle {
+            font-size: 0.875rem;
+            color: #718096;
+        }
+        
+        .files-section {
+            background: white;
+            border-radius: 16px;
+            padding: 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+            max-height: 600px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .section-header {
+            padding: 2rem 2rem 1rem 2rem;
+            border-bottom: 1px solid #e2e8f0;
+            flex-shrink: 0;
+        }
+        
+        .section-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        
+        .section-title-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .section-title-left i {
+            color: #FFD760;
+            font-size: 1.5rem;
+        }
+        
+        .section-title-left h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1a202c;
+        }
+        
+        .section-subtitle {
+            color: #718096;
+            font-size: 1rem;
+        }
+        
+        .add-file-btn {
+            background: linear-gradient(135deg, #FFD760 0%, #FFCC00 100%);
+            color: #2E2E2E;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .add-file-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 215, 96, 0.4);
+            color: #2E2E2E;
+            text-decoration: none;
+        }
+        
+        .files-table-container {
+            flex: 1;
+            overflow-y: auto;
+            max-height: 400px;
+        }
+        
+        .files-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .files-table thead {
+            background: #f8fafc;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .files-table th {
+            padding: 1rem 2rem;
+            text-align: left;
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .files-table td {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+        }
+        
+        .files-table tbody tr {
+            transition: background-color 0.2s;
+        }
+        
+        .files-table tbody tr:hover {
+            background: #f8fafc;
+        }
+        
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .file-icon {
+            width: 40px;
+            height: 40px;
+            background: #e53e3e;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.25rem;
+        }
+        
+        .file-details {
+            flex: 1;
+        }
+        
+        .file-name {
+            font-weight: 600;
+            color: #1a202c;
+            margin-bottom: 0.25rem;
+            word-break: break-all;
+        }
+        
+        .file-id {
+            font-size: 0.75rem;
+            color: #718096;
+        }
+        
+        .file-size {
+            font-weight: 500;
+            color: #4a5568;
+        }
+        
+        .file-date {
+            color: #718096;
+            font-size: 0.875rem;
+        }
+        
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .status-completed {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .file-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .action-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+        
+        .action-btn.view {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+        
+        .action-btn.view:hover {
+            background: #bfdbfe;
+        }
+        
+        .action-btn.qr {
+            background: #fef3c7;
+            color: #d97706;
+        }
+        
+        .action-btn.qr:hover {
+            background: #fde68a;
+        }
+        
+        .action-btn.delete {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+        
+        .action-btn.delete:hover {
+            background: #fecaca;
+        }
+        
+        .action-btn.download {
+            background: #e0f2fe;
+            color: #0277bd;
+        }
+        
+        .action-btn.download:hover {
+            background: #b3e5fc;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #718096;
+        }
+        
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        
+        .empty-state h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #4a5568;
+        }
+        
+        .loading-more {
+            text-align: center;
+            padding: 1rem;
+            color: #718096;
+            font-size: 0.875rem;
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #e2e8f0;
+            border-top: 2px solid #FFD760;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 0.5rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Modal QR */
+        .qr-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+        
+        .qr-modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+        
+        .qr-modal-header {
+            margin-bottom: 1.5rem;
+        }
+        
+        .qr-modal-header h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 0.5rem;
+        }
+        
+        .qr-modal-header p {
+            color: #718096;
+            font-size: 0.875rem;
+        }
+        
+        .qr-code-container {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .qr-code-container img {
+            max-width: 200px;
+            height: auto;
+            border-radius: 8px;
+        }
+        
+        .qr-modal-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+        
+        .qr-btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        .qr-btn-primary {
+            background: linear-gradient(135deg, #FFD760 0%, #FFCC00 100%);
+            color: #2E2E2E;
+        }
+        
+        .qr-btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 215, 96, 0.4);
+        }
+        
+        .qr-btn-secondary {
+            background: #f8fafc;
+            color: #4a5568;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .qr-btn-secondary:hover {
+            background: #e2e8f0;
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #718096;
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+        
+        .close-modal:hover {
+            background: #f1f5f9;
+            color: #2d3748;
+        }
+        
+        /* Estilos para la barra de búsqueda en el header */
+        .search-container-header {
+            margin-bottom: 1rem;
+        }
+        
+        .search-box-header {
+            position: relative;
+            display: flex;
+            align-items: center;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 0;
+            transition: all 0.2s ease;
+            max-width: 400px;
+        }
+        
+        .search-box-header:focus-within {
+            border-color: #4A6FA5;
+            box-shadow: 0 0 0 3px rgba(74, 111, 165, 0.1);
+        }
+        
+        .search-icon-header {
+            color: #718096;
+            margin-left: 0.75rem;
+            font-size: 0.875rem;
+        }
+        p {
+            font-size: 0.75rem;
+        }
+        
+        #searchInput {
+            flex: 1;
+            border: none;
+            outline: none;
+            padding: 0.5rem 0.5rem;
+            font-size: 0.875rem;
+            background: transparent;
+            color: #333;
+        }
+        
+        #searchInput::placeholder {
+            color: #a0aec0;
+        }
+        
+        .clear-search-header {
+            background: none;
+            border: none;
+            color: #718096;
+            cursor: pointer;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.75rem;
+            transition: color 0.2s ease;
+        }
+        
+        .clear-search-header:hover {
+            color: #e53e3e;
+        }
+        
+        .search-results-header {
+            margin-top: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            background: #e6fffa;
+            border-radius: 6px;
+            color: #2d3748;
+            font-size: 0.75rem;
+            border: 1px solid #81e6d9;
+        }
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="section-title">
+            <div class="section-title-left">
+                <i class="fas fa-folder-tree"></i>
+                <h2>Explorador de Archivos</h2>
+            </div>
+            
+        </div>
+        
+        <div class="explorer-container">
+            <!-- Árbol de carpetas -->
+            <div class="folder-tree">
+                <h3>
+                    <i class="fas fa-folder"></i>
+                    Carpetas
+                </h3>
+                
+                <!-- Carpeta raíz -->
+                <div class="folder-item {% if not current_path %}active{% endif %}" 
+                     onclick="window.location.href='{{ url_for('list_files') }}'">
+                    <i class="fas fa-home folder-icon"></i>
+                    <span class="folder-name">Casa</span>
+                    <span class="file-count">
+                    </span>
+                </div>
+                
+                <!-- Carpetas específicas -->
+                {% for folder_path, folder in folders.items() %}
+                    {% if folder_path != 'root' %}
+                        <div class="folder-item {% if current_path == folder_path %}active{% endif %}" 
+                             onclick="window.location.href='{{ url_for('list_files', folder_path=folder_path) }}'">
+                            <i class="fas fa-folder folder-icon"></i>
+                            <span class="folder-name">{{ folder_path }}</span>
+                            <span class="file-count">{{ folder.files|length }}</span>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            
+            <!-- Contenido principal -->
+            <div class="main-content">
+                <div class="content-header">
+                    <!-- Breadcrumb -->
+                    <div class="breadcrumb">
+                        <a href="{{ url_for('list_files') }}">
+                            <i class="fas fa-home"></i> Inicio
+                        </a>
+                        {% if current_path %}
+                            {% set path_parts = current_path.split('/') %}
+                            {% for i in range(path_parts|length) %}
+                                <i class="fas fa-chevron-right"></i>
+                                {% set partial_path = path_parts[:i+1]|join('/') %}
+                                {% if loop.last %}
+                                    <span>{{ path_parts[i] }}</span>
+                                {% else %}
+                                    <a href="{{ url_for('list_files', folder_path=partial_path) }}">{{ path_parts[i] }}</a>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Barra de búsqueda -->
+                    <div class="search-container-header">
+                        <div class="search-box-header">
+                            <i class="fas fa-search search-icon-header"></i>
+                            <input type="text" id="searchInput" placeholder="Buscar archivos..." onkeyup="filterFiles()">
+                            <button type="button" class="clear-search-header" onclick="clearSearch()" style="display: none;">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div id="searchResults" class="search-results-header" style="display: none;"></div>
+                    </div>
+                    
+                    <!-- Acciones de carpeta -->
+                    <div class="folder-actions">
+                        <button class="btn-create-folder" onclick="openCreateFolderModal()">
+                            <i class="fas fa-folder-plus"></i>
+                            Nueva Carpeta
+                        </button>
+                        <button class="btn-upload-file" onclick="window.location.href='/'">
+                            <i class="fas fa-upload"></i>
+                            Subir Archivo
+                        </button>
+                        
+                        <!-- Botones de ordenamiento -->
+                        <div class="sort-buttons">
+                            <button class="btn-sort active" id="sortByDate" onclick="sortFiles('date')" title="Ordenar por fecha (más reciente primero)">
+                                <i class="fas fa-calendar-alt"></i>
+                                Fecha
+                            </button>
+                            <button class="btn-sort" id="sortByName" onclick="sortFiles('name')" title="Ordenar por nombre alfabéticamente">
+                                <i class="fas fa-sort-alpha-down"></i>
+                                Nombre
+                            </button>
+                        </div>
+                        
+                        {% if current_path and current_path != 'certificados' %}
+                            <button class="btn-delete-folder" 
+                                    onclick="if(confirm('¿Estás seguro de eliminar esta carpeta y todos sus archivos?')) window.location.href='{{ url_for('delete_folder_route', folder_path=current_path) }}'">
+                                <i class="fas fa-trash"></i>
+                                Eliminar Carpeta
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+                
+
+                
+                <!-- Grid de archivos -->
+                <div class="files-grid">
+                    {% if current_folder %}
+                        {% set files_to_show = current_folder.files %}
+                    {% else %}
+                        {% set files_to_show = [] %}
+                        {% for folder in folders.values() %}
+                            {% set files_to_show = files_to_show + folder.files %}
+                        {% endfor %}
+                    {% endif %}
+                    
+                    {% if files_to_show %}
+                        <div class="file-grid">
+                            {% for file in files_to_show %}
+                                <div class="file-card">
+                                    <div class="file-header">
+                                        <div class="file-info">
+                                            <div class="file-icon">
+                                                <i class="fas fa-file-pdf"></i>
+                                            </div>
+                                            <h4 title="{{ file.filename if file.filename else file.name.split('/')[-1] }}">
+                                                {{ (file.filename if file.filename else file.name.split('/')[-1])[:60] }}{% if (file.filename if file.filename else file.name.split('/')[-1])|length > 25 %}...{% endif %}
+                                            </h4>
+                                        </div>
+                                        <div class="file-details">
+                                            <p>
+                                                {% if file.size < 1024 %}
+                                                    {{ file.size }} B
+                                                {% elif file.size < 1024*1024 %}
+                                                    {{ (file.size / 1024) | round(1) }} KB
+                                                {% else %}
+                                                    {{ (file.size / 1024 / 1024) | round(1) }} MB
+                                                {% endif %}
+                                                • {{ file.upload_timestamp | datetime }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="file-actions">
+                                        <a href="{{ file.url }}" target="_blank" class="btn-file btn-view" title="Ver archivo">
+                                            <i class="fas fa-eye"></i>
+                                            Ver
+                                        </a>
+                                        <button class="btn-file btn-move" onclick="openMoveFileModal('{{ file.name }}')" title="Mover archivo">
+                                            <i class="fas fa-arrows-alt"></i>
+                                            Mover
+                                        </button>
+                                        <a href="{{ url_for('delete_file_route', file_name=file.name) }}" 
+                                           class="btn-file btn-delete" 
+                                           title="Eliminar archivo"
+                                           onclick="return confirm('¿Estás seguro de eliminar este archivo?')">
+                                            <i class="fas fa-trash"></i>
+                                            Eliminar
+                                        </a>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="empty-folder">
+                            <i class="fas fa-folder-open"></i>
+                            <h3>Carpeta vacía</h3>
+                            <p>No hay archivos en esta carpeta. <a href="{{ url_for('index') }}">Sube un archivo</a> para comenzar.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal para crear carpeta -->
+    <div id="createFolderModal" class="modal">
+        <div class="modal-content">
+            <h3>Crear Nueva Carpeta</h3>
+            <form action="{{ url_for('create_folder_route') }}" method="post">
+                <div class="form-group">
+                    <label for="folder_name">Nombre de la carpeta:</label>
+                    <input type="text" id="folder_name" name="folder_name" required>
+                </div>
+                <input type="hidden" name="parent_folder" value="{{ current_path if current_path else 'root' }}">
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeCreateFolderModal()">Cancelar</button>
+                    <button type="submit" class="btn-confirm">Crear Carpeta</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Modal para mover archivo -->
+    <div id="moveFileModal" class="modal">
+        <div class="modal-content">
+            <h3>Mover Archivo</h3>
+            <form action="{{ url_for('move_file_route') }}" method="post">
+                <div class="form-group">
+                    <label for="new_folder">Carpeta de destino:</label>
+                    <select id="new_folder" name="new_folder" required>
+                        <option value="">Cargando carpetas...</option>
+                        <!-- Las opciones se cargarán dinámicamente -->
+                    </select>
+                </div>
+                <input type="hidden" id="old_path" name="old_path">
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeMoveFileModal()">Cancelar</button>
+                    <button type="submit" class="btn-confirm">Mover Archivo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        // Funciones para modales
+        function openCreateFolderModal() {
+            document.getElementById('createFolderModal').style.display = 'block';
+            document.getElementById('folder_name').focus();
+        }
+        
+        function closeCreateFolderModal() {
+            document.getElementById('createFolderModal').style.display = 'none';
+            document.getElementById('folder_name').value = '';
+        }
+        
+        function openMoveFileModal(filePath) {
+            updateFolderSelector();
+            document.getElementById('old_path').value = filePath;
+            document.getElementById('moveFileModal').style.display = 'block';
+        }
+        
+        function closeMoveFileModal() {
+            document.getElementById('moveFileModal').style.display = 'none';
+            document.getElementById('old_path').value = '';
+            document.getElementById('new_folder').selectedIndex = 0;
+        }
+        
+        // Cerrar modales al hacer clic fuera
+        window.addEventListener('click', function(event) {
+            const createModal = document.getElementById('createFolderModal');
+            const moveModal = document.getElementById('moveFileModal');
+            
+            if (event.target === createModal) {
+                closeCreateFolderModal();
+            }
+            
+            if (event.target === moveModal) {
+                closeMoveFileModal();
+            }
+        });
+        
+        // Cerrar modales con Escape
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeCreateFolderModal();
+                closeMoveFileModal();
+            }
+        });
+        
+        // Validación de formularios
+        document.addEventListener('DOMContentLoaded', function() {
+            const createFolderForm = document.querySelector('#createFolderModal form');
+            if (createFolderForm) {
+                createFolderForm.addEventListener('submit', function(e) {
+                    const folderName = document.getElementById('folder_name').value.trim();
+                    if (!folderName) {
+                        e.preventDefault();
+                        alert('Por favor, ingresa un nombre para la carpeta.');
+                        return false;
+                    }
+                    
+                    // Validar caracteres especiales
+                    if (!/^[a-zA-Z0-9_\-\s]+$/.test(folderName)) {
+                        e.preventDefault();
+                        alert('El nombre de la carpeta solo puede contener letras, números, guiones y espacios.');
+                        return false;
+                    }
+                });
+            }
+        });
+        
+        // Animaciones y efectos
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animar entrada de las tarjetas de archivos
+            const fileCards = document.querySelectorAll('.file-card');
+            fileCards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                
+                setTimeout(() => {
+                    card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 50);
+            });
+            
+            // Animar entrada de las carpetas
+            const folderItems = document.querySelectorAll('.folder-item');
+            folderItems.forEach((item, index) => {
+                item.style.opacity = '0';
+                item.style.transform = 'translateX(-20px)';
+                
+                setTimeout(() => {
+                    item.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                    item.style.opacity = '1';
+                    item.style.transform = 'translateX(0)';
+                }, index * 100);
+            });
+        });
+        
+        // Función para actualizar el selector de carpetas dinámicamente
+        function updateFolderSelector() {
+            fetch('/api/folders')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.folders) {
+                        const select = document.getElementById('new_folder');
+                        if (select) {
+                            // Guardar la opción seleccionada actual
+                            const currentValue = select.value;
+                            
+                            // Limpiar opciones existentes
+                            select.innerHTML = '';
+                            
+                            // Agregar solo las carpetas que realmente existen
+                            Object.keys(data.folders).forEach(folderPath => {
+                                if (folderPath && folderPath !== 'root') {
+                                    const option = document.createElement('option');
+                                    option.value = folderPath;
+                                    
+                                    // Agregar iconos según el tipo de carpeta
+                                    let icon = '📁';
+                                    if (folderPath.includes('certificados')) icon = '📜';
+                                    else if (folderPath.includes('contratos')) icon = '📋';
+                                    else if (folderPath.includes('facturas')) icon = '🧾';
+                                    else if (folderPath.includes('reportes')) icon = '📊';
+                                    else if (folderPath.includes('documentos')) icon = '📄';
+                                    else if (folderPath.includes('medicos')) icon = '🏥';
+                                    else if (folderPath.includes('legales')) icon = '📄';
+                                    
+                                    option.textContent = `${icon} ${folderPath}`;
+                                    select.appendChild(option);
+                                }
+                            });
+                            
+                            // Restaurar la selección anterior si existe
+                            if (currentValue && select.querySelector(`option[value="${currentValue}"]`)) {
+                                select.value = currentValue;
+                            }
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error al actualizar carpetas:', error);
+                });
+        }
+        
+        // Actualizar selector de carpetas al abrir el modal de mover
+        function openMoveFileModal(filePath) {
+            updateFolderSelector();
+            document.getElementById('old_path').value = filePath;
+            document.getElementById('moveFileModal').style.display = 'block';
+        }
+        
+        // Funciones de ordenamiento
+        let currentSortType = 'date'; // Por defecto ordenar por fecha
+        
+        function sortFiles(sortType) {
+            currentSortType = sortType;
+            
+            // Actualizar botones activos
+            document.querySelectorAll('.btn-sort').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(sortType === 'date' ? 'sortByDate' : 'sortByName').classList.add('active');
+            
+            const fileGrid = document.querySelector('.file-grid');
+            if (!fileGrid) return;
+            
+            const fileCards = Array.from(fileGrid.querySelectorAll('.file-card'));
+            
+            fileCards.sort((a, b) => {
+                if (sortType === 'date') {
+                    // Ordenar por fecha (más reciente primero)
+                    const dateA = a.querySelector('.file-details p').textContent.split('•')[1]?.trim();
+                    const dateB = b.querySelector('.file-details p').textContent.split('•')[1]?.trim();
+                    
+                    if (dateA && dateB) {
+                        return new Date(dateB) - new Date(dateA);
+                    }
+                    return 0;
+                } else if (sortType === 'name') {
+                    // Ordenar por nombre alfabéticamente
+                    const nameA = a.querySelector('.file-info h4').getAttribute('title') || a.querySelector('.file-info h4').textContent;
+                    const nameB = b.querySelector('.file-info h4').getAttribute('title') || b.querySelector('.file-info h4').textContent;
+                    
+                    return nameA.toLowerCase().localeCompare(nameB.toLowerCase());
+                }
+                return 0;
+            });
+            
+            // Reordenar los elementos en el DOM
+            fileCards.forEach(card => fileGrid.appendChild(card));
+        }
+        
+        // Aplicar ordenamiento por defecto al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            sortFiles('date');
+        });
+        
+        // Funciones de búsqueda
+        function filterFiles() {
+            const searchInput = document.getElementById('searchInput');
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            const fileCards = document.querySelectorAll('.file-card');
+            const clearButton = document.querySelector('.clear-search-header');
+            const searchResults = document.getElementById('searchResults');
+            
+            let visibleCount = 0;
+            
+            fileCards.forEach(card => {
+                const fileName = card.querySelector('.file-info h4').textContent.toLowerCase();
+                
+                if (searchTerm === '' || fileName.includes(searchTerm)) {
+                    card.classList.remove('hidden');
+                    visibleCount++;
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+            
+            // Mostrar/ocultar botón de limpiar
+            if (searchTerm !== '') {
+                clearButton.style.display = 'block';
+                searchResults.style.display = 'block';
+                
+                if (visibleCount === 0) {
+                    searchResults.textContent = 'No se encontraron archivos que coincidan con la búsqueda.';
+                    searchResults.style.background = '#fed7d7';
+                    searchResults.style.borderColor = '#fc8181';
+                    searchResults.style.color = '#c53030';
+                } else {
+                    searchResults.textContent = `Se encontraron ${visibleCount} archivo(s) que coinciden con "${searchTerm}".`;
+                    searchResults.style.background = '#e6fffa';
+                    searchResults.style.borderColor = '#81e6d9';
+                    searchResults.style.color = '#2d3748';
+                }
+            } else {
+                clearButton.style.display = 'none';
+                searchResults.style.display = 'none';
+            }
+        }
+        
+        function clearSearch() {
+            const searchInput = document.getElementById('searchInput');
+            const fileCards = document.querySelectorAll('.file-card');
+            const clearButton = document.querySelector('.clear-search-header');
+            const searchResults = document.getElementById('searchResults');
+            
+            searchInput.value = '';
+            clearButton.style.display = 'none';
+            searchResults.style.display = 'none';
+            
+            fileCards.forEach(card => {
+                card.classList.remove('hidden');
+            });
+            
+            searchInput.focus();
+        }
+    </script>
+{% endblock %}

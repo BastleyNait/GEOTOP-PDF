@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: geotop-flask-uploader
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python app.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.8.18
+      - key: B2_ACCESS_KEY_ID
+        sync: false
+      - key: B2_SECRET_ACCESS_KEY
+        sync: false
+      - key: B2_BUCKET_NAME
+        sync: false
+      - key: B2_ENDPOINT
+        sync: false
+      - key: B2_REGION
+        sync: false
+      - key: FLASK_SECRET_KEY
+        generateValue: true

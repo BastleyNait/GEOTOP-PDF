@@ -1,0 +1,35 @@
+<svg width="800" height="200" viewBox="0 0 800 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grayGradient" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0%" stop-color="#333" />
+      <stop offset="100%" stop-color="#ccc" />
+    </linearGradient>
+    <linearGradient id="yellowGradient" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0%" stop-color="#f9d423" />
+      <stop offset="100%" stop-color="#c28e00" />
+    </linearGradient>
+  </defs>
+
+  <!-- GEO -->
+  <text x="20" y="90" font-size="80" font-family="Arial" fill="url(#grayGradient)" font-weight="900">GEO</text>
+
+  <!-- T (topographic instrument symbol) -->
+  <line x1="200" y1="15" x2="250" y2="15" stroke="#f9d423" stroke-width="8"/>
+  <line x1="225" y1="20" x2="210" y2="60" stroke="#222" stroke-width="5"/>
+  <line x1="225" y1="20" x2="240" y2="60" stroke="#222" stroke-width="5"/>
+  <line x1="225" y1="60" x2="225" y2="170" stroke="#f9d423" stroke-width="8"/>
+  <circle cx="225" cy="105" r="12" fill="white" stroke="#999" stroke-width="3"/>
+
+  <!-- OP -->
+  <text x="240" y="90" font-size="80" font-family="Arial" fill="url(#yellowGradient)" font-weight="900">OP</text>
+
+  <!-- AQP -->
+  <text x="400" y="90" font-size="80" font-family="Arial" fill="url(#grayGradient)" font-weight="900">AQP</text>
+
+  <!-- Línea horizontal inferior -->
+  <line x1="0" y1="105" x2="580" y2="105" stroke="#d4af37" stroke-width="4"/>
+
+  <!-- Slogan -->
+  <text x="250" y="140" font-size="28" font-family="Brush Script MT, cursive" fill="#333">La Casa del Ingeniero</text>
+  
+</svg>
