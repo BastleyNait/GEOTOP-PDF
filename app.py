@@ -1,3 +1,4 @@
+from math import fabs
 from flask import Flask, render_template, request, redirect, url_for, flash, send_file
 import os
 import uuid
@@ -61,13 +62,35 @@ def request_entity_too_large(error):
     flash('El archivo es demasiado grande. El tamaño máximo permitido es 16MB.', 'error')
     return redirect(url_for('index'))
 
+# Filtro para restar tiempo de un timestamp
+@app.template_filter('subtract_seconds')
+def subtract_seconds(timestamp, seconds):
+    try:
+        if not timestamp:
+            return 0
+        # Convertir a float si es string
+        if isinstance(timestamp, str):
+            timestamp = float(timestamp)
+        else:
+            timestamp = float(timestamp)
+        # Si está en milisegundos, convertir segundos a milisegundos
+        if timestamp > 1e12:
+            seconds = seconds * 1000
+        return timestamp - seconds
+    except (ValueError, TypeError):
+        return timestamp
+
 # Filtro para formatear timestamps como fechas
 @app.template_filter('datetime')
 def format_datetime(timestamp):
     try:
         if not timestamp:
             return "no existe"
-        timestamp = float(timestamp)
+        # Convertir a float si es string
+        if isinstance(timestamp, str):
+            timestamp = float(timestamp)
+        else:
+            timestamp = float(timestamp)
         if timestamp > 1e12:  # si está en milisegundos
             timestamp = timestamp / 1000
         dt = datetime.fromtimestamp(timestamp)
