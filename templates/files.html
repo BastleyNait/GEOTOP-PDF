@@ -92,6 +92,9 @@
             color: #718096;
             margin-bottom: 1rem;
         }
+        a {
+            text-decoration: none;
+        }
         
         .breadcrumb a {
             color: #4A6FA5;
@@ -271,6 +274,24 @@
         
         .btn-move:hover {
             background: #FFCC00;
+        }
+        
+        .btn-qr {
+            background: #fef3c7;
+            color: #d97706;
+        }
+        
+        .btn-qr:hover {
+            background: #fde68a;
+        }
+        
+        .btn-download {
+            background: #e0f2fe;
+            color: #0277bd;
+        }
+        
+        .btn-download:hover {
+            background: #b3e5fc;
         }
         
         .btn-delete {
@@ -1076,7 +1097,15 @@
                                     <div class="file-actions">
                                         <a href="{{ file.url }}" target="_blank" class="btn-file btn-view" title="Ver archivo">
                                             <i class="fas fa-eye"></i>
-                                            Ver
+                                            Ver Certificado
+                                        </a>
+                                        <a href="{{ url_for('download_qr', file_name=file.name) }}" class="btn-file btn-qr" title="Descargar QR" onclick="downloadFile(event, this.href)">
+                                            <i class="fas fa-qrcode"></i>
+                                            QR
+                                        </a>
+                                        <a href="{{ url_for('download_blank_with_qr', file_name=file.name) }}" class="btn-file btn-download" title="Descargar PDF en blanco con QR" onclick="downloadFile(event, this.href)">
+                                            <i class="fas fa-file-pdf"></i>
+                                            PDF QR
                                         </a>
                                         <button class="btn-file btn-move" onclick="openMoveFileModal('{{ file.name }}')" title="Mover archivo">
                                             <i class="fas fa-arrows-alt"></i>
@@ -1399,6 +1428,19 @@
             });
             
             searchInput.focus();
+        }
+        
+        // Función para manejar descargas sin recargar la página
+        function downloadFile(event, url) {
+            event.preventDefault();
+            
+            // Crear un enlace temporal para la descarga
+            const link = document.createElement('a');
+            link.href = url;
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
     </script>
 {% endblock %}

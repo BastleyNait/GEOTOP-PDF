@@ -93,9 +93,9 @@ def get_s3_client():
         logger.error(f"Error al crear cliente S3: {str(e)}")
         return None
 ex = 490
-ey = 665
-qr_size = 55
-# qr_size = 58
+ey = 667
+qr_size = 53
+# qr_size = 58 
 def add_qr_to_pdf(input_pdf_path, output_pdf_path, qr_url, x=ex, y=ey):
     """
     Añade un código QR a un PDF existente en la posición especificada.
@@ -235,31 +235,19 @@ def add_qr_to_pdf(input_pdf_path, output_pdf_path, qr_url, x=ex, y=ey):
 
 def create_blank_pdf_with_qr(qr_url, output_path, original_pdf_path=None):
     """
-    Crea un PDF en blanco con un QR en la posición específica del certificado.
-    Usa exactamente los mismos parámetros del QR que el certificado (con fondo transparente).
-    Si se proporciona original_pdf_path, extrae las dimensiones exactas de ese PDF.
+    Crea un PDF en blanco con un QR usando el template estático.
+    Usa el archivo blank_template.pdf de la carpeta static y le estampa el QR
+    en la misma posición que se usa en los certificados.
     """
     qr_img_path = None
     try:
-        # Determinar el tamaño de página
-        page_size = A4  # Valor por defecto
+        # Ruta al PDF template estático
+        template_path = os.path.join('static', 'blank_template.pdf')
         
-        # Si se proporciona el PDF original, extraer sus dimensiones exactas
-        if original_pdf_path and os.path.exists(original_pdf_path):
-            try:
-                with open(original_pdf_path, 'rb') as file:
-                    reader = PdfReader(file)
-                    if len(reader.pages) > 0:
-                        # Obtener las dimensiones de la primera página
-                        page = reader.pages[0]
-                        mediabox = page.mediabox
-                        # Convertir de puntos PDF a tupla (ancho, alto)
-                        page_width = float(mediabox.width)
-                        page_height = float(mediabox.height)
-                        page_size = (page_width, page_height)
-                        logger.info(f"Dimensiones extraídas del PDF original: {page_width} x {page_height} puntos")
-            except Exception as e:
-                logger.warning(f"No se pudieron extraer dimensiones del PDF original: {str(e)}, usando A4")
+        # Verificar que el template existe
+        if not os.path.exists(template_path):
+            logger.error(f"No se encontró el template en: {template_path}")
+            return False
         
         # Generar el código QR exactamente igual que en add_qr_to_pdf
         qr = qrcode.QRCode(
@@ -288,34 +276,67 @@ def create_blank_pdf_with_qr(qr_url, output_path, original_pdf_path=None):
         qr_img.putdata(new_data)
         
         # Guardar la imagen temporal
-        qr_img_path = os.path.join(os.path.dirname(output_path), f"temp_qr_blank_{uuid.uuid4()}.png")
+        qr_img_path = os.path.join(UPLOAD_FOLDER, f"qr_blank_{uuid.uuid4()}.png")
         qr_img.save(qr_img_path, format="PNG")
         
+        # Obtener las dimensiones del template para usar el mismo pagesize
+        page_size = letter  # Valor por defecto
         try:
-            # Crear PDF en blanco con las dimensiones exactas del original
-            can = canvas.Canvas(output_path, pagesize=page_size)
+            with open(template_path, 'rb') as file:
+                reader = PdfReader(file)
+                if len(reader.pages) > 0:
+                    page = reader.pages[0]
+                    mediabox = page.mediabox
+                    page_width = float(mediabox.width)
+                    page_height = float(mediabox.height)
+                    page_size = (page_width, page_height)
+                    logger.info(f"Usando dimensiones del template: {page_width} x {page_height} puntos")
+        except Exception as e:
+            logger.warning(f"No se pudieron extraer dimensiones del template, usando Letter: {str(e)}")
+        
+        # Crear un PDF temporal con el código QR usando las mismas dimensiones
+        packet = BytesIO()
+        can = canvas.Canvas(packet, pagesize=page_size)
+        can.drawImage(qr_img_path, ex, ey, qr_size, qr_size, mask='auto')  # mask='auto' para respetar la transparencia
+        can.save()
+        
+        # Mover al inicio del BytesIO
+        packet.seek(0)
+        
+        # Leer el PDF template
+        with open(template_path, "rb") as template_file:
+            template_pdf = PdfReader(template_file)
+            output = PdfWriter()
             
-            # Usar exactamente las mismas coordenadas y tamaño que en add_qr_to_pdf
-            # Variables globales: ex=498, ey=622, qr_size=52
+            # Añadir el código QR a la primera página del template
+            for i in range(len(template_pdf.pages)):
+                page = template_pdf.pages[i]
+                
+                # Solo añadir el QR a la primera página (igual que en add_qr_to_pdf)
+                if i == 0:
+                    # Crear un nuevo PDF con el QR
+                    watermark = PdfReader(packet)
+                    page.merge_page(watermark.pages[0])
+                
+                output.add_page(page)
             
-            # Dibujar el QR en el PDF con transparencia (igual que en el certificado)
-            can.drawImage(qr_img_path, ex, ey, qr_size, qr_size, mask='auto')
-            can.save()
-            
-            logger.info(f"PDF en blanco con QR creado exitosamente: {output_path}")
-            return True
-            
-        finally:
-            # Limpiar archivo temporal del QR
-            if qr_img_path and os.path.exists(qr_img_path):
-                try:
-                    os.remove(qr_img_path)
-                except Exception as e:
-                    logger.warning(f"No se pudo eliminar QR temporal: {str(e)}")
+            # Guardar el resultado
+            with open(output_path, "wb") as output_stream:
+                output.write(output_stream)
+        
+        logger.info(f"PDF en blanco con QR creado exitosamente usando template: {output_path}")
+        return True
                     
     except Exception as e:
         logger.exception(f"Error al crear PDF en blanco con QR: {str(e)}")
         return False
+    finally:
+        # Limpiar archivo temporal del QR
+        if qr_img_path and os.path.exists(qr_img_path):
+            try:
+                os.remove(qr_img_path)
+            except Exception as e:
+                logger.warning(f"No se pudo eliminar QR temporal: {str(e)}")
 
 def upload_to_backblaze(file_path, original_filename=None, folder="certificados"):
     """
@@ -373,7 +394,6 @@ def upload_to_backblaze(file_path, original_filename=None, folder="certificados"
         
         # Generar la URL pública anticipadamente para el código QR
         public_url = f"{B2_ENDPOINT}/{B2_BUCKET_NAME}/{file_key}"
-        
         # Si es un PDF, añadir el código QR
         upload_file_path = file_path  # Por defecto, usar el archivo original
         if extension.lower() == '.pdf':
@@ -944,6 +964,124 @@ def download_blank_pdf(filename):
         flash('Error al descargar archivo', 'error')
         return redirect(url_for('index'))
 
+@app.route('/download_qr/<path:file_name>')
+def download_qr(file_name):
+    """
+    Genera y descarga solo el código QR de un archivo específico.
+    """
+    try:
+        # Buscar el archivo en la lista de archivos del bucket
+        files_data, error = list_files_in_bucket()
+        if error or not files_data:
+            flash('No se pudieron obtener los archivos', 'error')
+            return redirect(url_for('list_files'))
+        
+        # Buscar el archivo específico
+        target_file = None
+        for file_info in files_data:
+            if file_info['name'] == file_name:
+                target_file = file_info
+                break
+        
+        if not target_file:
+            flash('Archivo no encontrado', 'error')
+            return redirect(url_for('list_files'))
+        
+        # Generar el código QR
+        qr = qrcode.QRCode(
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_L,
+            box_size=10,
+            border=0,
+        )
+        qr.add_data(target_file['url'])
+        qr.make(fit=True)
+        
+        # Crear imagen QR
+        qr_img = qr.make_image(fill_color="black", back_color="white")
+        
+        # Guardar temporalmente
+        # Reemplazar barras por guiones bajos para evitar problemas de directorio
+        safe_filename = os.path.splitext(file_name)[0].replace('/', '_').replace('\\', '_')
+        qr_filename = f"qr_{safe_filename}.png"
+        qr_path = os.path.join(app.config['UPLOAD_FOLDER'], qr_filename)
+        qr_img.save(qr_path, format="PNG")
+        
+        # Enviar archivo y programar eliminación
+        def remove_file():
+            try:
+                if os.path.exists(qr_path):
+                    os.remove(qr_path)
+            except:
+                pass
+        
+        # Programar eliminación después de 5 segundos
+        import threading
+        timer = threading.Timer(5.0, remove_file)
+        timer.start()
+        
+        return send_file(qr_path, as_attachment=True, download_name=qr_filename)
+        
+    except Exception as e:
+        logger.exception(f"Error al generar QR para {file_name}: {str(e)}")
+        flash('Error al generar código QR', 'error')
+        return redirect(url_for('list_files'))
+
+@app.route('/download_blank_with_qr/<path:file_name>')
+def download_blank_with_qr(file_name):
+    """
+    Genera y descarga un PDF en blanco con el QR del archivo específico.
+    """
+    try:
+        # Buscar el archivo en la lista de archivos del bucket
+        files_data, error = list_files_in_bucket()
+        if error or not files_data:
+            flash('No se pudieron obtener los archivos', 'error')
+            return redirect(url_for('list_files'))
+        
+        # Buscar el archivo específico
+        target_file = None
+        for file_info in files_data:
+            if file_info['name'] == file_name:
+                target_file = file_info
+                break
+        
+        if not target_file:
+            flash('Archivo no encontrado', 'error')
+            return redirect(url_for('list_files'))
+        
+        # Crear PDF en blanco con QR
+        # Reemplazar barras por guiones bajos para evitar problemas de directorio
+        safe_filename = os.path.splitext(file_name)[0].replace('/', '_').replace('\\', '_')
+        blank_filename = f"blank_qr_{safe_filename}.pdf"
+        blank_path = os.path.join(app.config['UPLOAD_FOLDER'], blank_filename)
+        
+        # Usar la función existente para crear el PDF en blanco con QR
+        success = create_blank_pdf_with_qr(target_file['url'], blank_path)
+        
+        if success and os.path.exists(blank_path):
+            # Programar eliminación del archivo temporal
+            def remove_file():
+                try:
+                    if os.path.exists(blank_path):
+                        os.remove(blank_path)
+                except:
+                    pass
+            
+            import threading
+            timer = threading.Timer(10.0, remove_file)
+            timer.start()
+            
+            return send_file(blank_path, as_attachment=True, download_name=blank_filename)
+        else:
+            flash('Error al crear PDF en blanco con QR', 'error')
+            return redirect(url_for('list_files'))
+        
+    except Exception as e:
+        logger.exception(f"Error al crear PDF en blanco con QR para {file_name}: {str(e)}")
+        flash('Error al crear PDF en blanco con QR', 'error')
+        return redirect(url_for('list_files'))
+
 @app.route('/create_folder', methods=['POST'])
 def create_folder_route():
     """
@@ -1055,4 +1193,4 @@ def api_get_folders():
 if __name__ == '__main__':
     logger.info("Iniciando la aplicación Flask")
     port = int(os.environ.get('PORT', 8080))
-    app.run(debug=False, host='0.0.0.0', port=port)
+    app.run(debug=True, host='0.0.0.0', port=port)
